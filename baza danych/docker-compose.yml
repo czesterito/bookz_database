@@ -1,0 +1,48 @@
+version: "3.9"
+   
+services:
+
+  #baza danych
+  postgres:
+    container_name: postgres_container
+    image: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /data/postgres
+    ports: 
+      - "8001:5432"  
+
+  #keycloak    
+  keycloak:
+    container_name: keycloak_container
+    image: jboss/keycloak
+    volumes:
+      - ./imports:/opt/jboss/keycloak/imports
+      - keycloak-db:/opt/jboss/keycloak/standalone/data
+    command: 
+      - "-b 0.0.0.0 -Dkeycloak.profile.feature.upload_scripts=enabled
+      -Dkeycloak.migration.action=import
+      -Dkeycloak.migration.provider=singleFile
+      -Dkeycloak.migration.file=/opt/jboss/keycloak/imports/Scrumapp-realm.json
+      -Dkeycloak.migration.strategy=IGNORE_EXISTING"
+    environment:
+      DB_VENDOR: postgres
+      DB_ADDR: postgres
+      DB_PORT: 5432
+      DB_DATABASE: postgres
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: haslo
+      PROXY_ADDRESS_FORWARDING: 'True'
+
+    ports:
+      - "8080:8080"   
+
+  
+volumes: 
+  postgres_data:
+  keycloak-db: 
